@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Support Engineer Dashboard{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #f4f7fa;
+    padding: 30px;
+  }
+  .dashboard-heading {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  .table td, .table th {
+    vertical-align: middle;
+  }
+  .status-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+</style>
+
+<div class="container">
+  <h2 class="dashboard-heading">Welcome {{ request.user.username }}</h2>
+
+  {% if assigned_issues %}
+  <div class="table-responsive">
+    <table class="table table-bordered bg-white shadow-sm">
+      <thead class="table-dark">
+        <tr>
+          <th>Ticket #</th>
+          <th>Device Name</th>
+          <th>Issue Type</th>
+          <th>Description</th>
+          <th>Reported By</th>
+          <th>Created On</th>
+          <th>Expected Resolve By</th>
+          <th>Status</th>
+          <th>Update</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for issue in assigned_issues %}
+        <tr>
+          <td>{{ issue.ticket_number }}</td>
+          <td>{{ issue.device_name }}</td>
+          <td>{{ issue.issue_type|title }}</td>
+          <td>{{ issue.description }}</td>
+          <td>{{ issue.reporter.username }}</td>
+          <td>{{ issue.created_at|date:"Y-m-d H:i" }}</td>
+          <td>{{ issue.expected_resolution_date }}</td>
+          <td>
+            <span class="badge bg-secondary">{{ issue.status|title }}</span>
+          </td>
+          <td>
+            <form method="POST" action="{% url 'update_engineer_status' issue.id %}" class="status-form">
+              {% csrf_token %}
+              <select name="new_status" class="form-select form-select-sm" required>
+                <option value="">Select</option>
+                <option value="pending">Pending</option>
+                <option value="in process">In Process</option>
+                <option value="done">Completed</option>
+              </select>
+              <button type="submit" class="btn btn-sm btn-success">Update</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="text-center text-muted">No issues assigned to you.</p>
+  {% endif %}
+</div>
+{% endblock %}
